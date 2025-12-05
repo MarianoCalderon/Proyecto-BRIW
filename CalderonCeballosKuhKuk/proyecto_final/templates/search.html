@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Buscador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='search.css') }}">
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <h1>BUSCADOR</h1>
+  </div>
+</header>
+
+<main>
+<div class="container">
+
+  <div class="search-box">
+    <form method="get" action="{{ url_for('search') }}" class="inline">
+      <input
+        type="search"
+        name="q"
+        id="q"
+        list="suggestions"
+        placeholder="Escribe tu consulta"
+        value="{{ query or '' }}"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+
+      <datalist id="suggestions">
+        {% for s in suggestions %}
+        <option value="{{ s }}">
+        {% endfor %}
+      </datalist>
+
+      <button type="submit">Buscar</button>
+    </form>
+
+    {% if expanded_q %}
+      <p class="total">
+        Consulta expandida: <code>{{ expanded_q }}</code>
+      </p>
+    {% endif %}
+
+    {% if correction and correction != query %}
+      <p class="correction">
+        ¿Quisiste decir
+        <a href="{{ url_for('search', q=correction) }}">{{ correction }}</a>?
+      </p>
+    {% endif %}
+
+    {% if query %}
+      <p class="total">{{ total_results }} resultados encontrados.</p>
+    {% endif %}
+  </div>
+
+  <div class="results">
+    <aside class="facets">
+
+      <!-- AÑO -->
+      <div class="facet-group">
+        <h4>Año</h4>
+        <a class="facet-link {% if not selected_year %}selected{% endif %}"
+           href="{{ url_for('search', q=query, year=None, domain=selected_domain, length=selected_length) }}">
+          Todos
+        </a>
+
+        {% for year, count in facets.year_i %}
+          {% set is_sel = (selected_year and (year|string == selected_year)) %}
+          {% if count > 0 or is_sel %}
+            <a class="facet-link {% if is_sel %}selected{% endif %}"
+               href="{{ url_for('search', q=query, year=year, domain=selected_domain, length=selected_length) }}">
+              {{ year }} <span>({{ count }})</span>
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- DOMINIO -->
+      <div class="facet-group">
+        <h4>Dominio</h4>
+        <a class="facet-link {% if not selected_domain %}selected{% endif %}"
+           href="{{ url_for('search', q=query, year=selected_year, domain=None, length=selected_length) }}">
+          Todos
+        </a>
+
+        {% for dom, count in facets.domain_s %}
+          {% set is_sel = (selected_domain == dom) %}
+          {% if count > 0 or is_sel %}
+            <a class="facet-link {% if is_sel %}selected{% endif %}"
+               href="{{ url_for('search', q=query, year=selected_year, domain=dom, length=selected_length) }}">
+              {{ dom }} <span>({{ count }})</span>
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- LONGITUD -->
+      <div class="facet-group">
+        <h4>Longitud</h4>
+        <a class="facet-link {% if not selected_length %}selected{% endif %}"
+           href="{{ url_for('search', q=query, year=selected_year, domain=selected_domain, length=None) }}">
+          Todos
+        </a>
+
+        {% for l, count in facets.length_s %}
+          {% set is_sel = (selected_length == l) %}
+          {% if count > 0 or is_sel %}
+            <a class="facet-link {% if is_sel %}selected{% endif %}"
+               href="{{ url_for('search', q=query, year=selected_year, domain=selected_domain, length=l) }}">
+              {{ l }} <span>({{ count }})</span>
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+    </aside>
+
+    <div class="results-list">
+      {% for r in results %}
+      <article class="result-item">
+        <h3><a href="{{ r.url }}" target="_blank">{{ r.title }}</a></h3>
+
+        <div class="total">
+          Año: {{ r.year }} |
+          Dominio: {{ r.domain }} |
+          Tipo: {{ r.type }} |
+          Longitud: {{ r.length }}
+        </div>
+
+        <p class="snippet">{{ r.snippet }}</p>
+      </article>
+      {% endfor %}
+
+      {% if query and not results %}
+        <p>No se encontraron resultados para esta combinación de filtros.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+</main>
+
+
+
+</body>
+</html>

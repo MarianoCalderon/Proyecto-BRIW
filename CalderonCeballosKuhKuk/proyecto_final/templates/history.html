@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Historial de búsquedas</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='search.css') }}">
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <h1>Historial de búsquedas</h1>
+  </div>
+</header>
+
+<main>
+<div class="container">
+
+  <div class="search-box">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Consulta</th>
+          <th>Año</th>
+          <th>Dominio</th>
+          <th>Longitud</th>
+          <th>Resultados</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in queries %}
+        <tr>
+          <td>{{ q["created_at"] }}</td>
+          <td>{{ q["query"] }}</td>
+          <td>{{ q["year"] or "-" }}</td>
+          <td>{{ q["domain"] or "-" }}</td>
+          <td>{{ q["length"] or "-" }}</td>
+          <td>{{ q["total_results"] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p style="margin-top: 1rem;">
+      <a href="{{ url_for('search') }}" class="back-link">← Volver al buscador</a>
+    </p>
+  </div>
+
+</div>
+</main>
+
+</body>
+</html>
